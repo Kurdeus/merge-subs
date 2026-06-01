@@ -42,11 +42,6 @@ jobs:
           echo ""
           echo "Done. Total lines in all.txt: $total"
 
-      - name: Deduplicate entries
-        run: |
-          sort -u all.txt -o all.txt
-          echo "After deduplication: $(wc -l < all.txt) unique lines"
-
       - name: Commit and push all.txt
         run: |
           git config user.name  "github-actions[bot]"
