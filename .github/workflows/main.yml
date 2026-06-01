@@ -1,0 +1,58 @@
+name: Merge V2Ray Subscriptions
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # runs every 2 hours
+  workflow_dispatch:        # allows manual trigger from GitHub UI
+  push:
+    paths:
+      - 'base.txt'          # also runs when base.txt is updated
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # needed to push all.txt back to the repo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch and merge all subscriptions
+        run: |
+          echo "Reading URLs from base.txt..."
+          > all.txt   # clear / create output file
+
+          while IFS= read -r url || [ -n "$url" ]; do
+            # skip empty lines and comments
+            [[ -z "$url" || "$url" == \#* ]] && continue
+
+            echo "Fetching: $url"
+            content=$(curl -fsSL --max-time 30 "$url" 2>/dev/null)
+
+            if [ $? -eq 0 ] && [ -n "$content" ]; then
+              echo "$content" >> all.txt
+              echo "  ✓ OK"
+            else
+              echo "  ✗ Failed or empty — skipping"
+            fi
+          done < base.txt
+
+          total=$(wc -l < all.txt)
+          echo ""
+          echo "Done. Total lines in all.txt: $total"
+
+      - name: Deduplicate entries
+        run: |
+          sort -u all.txt -o all.txt
+          echo "After deduplication: $(wc -l < all.txt) unique lines"
+
+      - name: Commit and push all.txt
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add all.txt
+          # only commit if there are actual changes
+          git diff --cached --quiet && echo "No changes — skipping commit." || \
+            git commit -m "chore: update all.txt [$(date -u +'%Y-%m-%d %H:%M UTC')]"
+          git push
