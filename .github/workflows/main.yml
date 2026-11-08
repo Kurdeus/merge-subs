@@ -12,7 +12,7 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     permissions:
-      contents: write       # needed to push all.txt / healthy.txt back to the repo
+      contents: write       # needed to push all.txt / all.txt back to the repo
 
     steps:
       - name: Checkout repository
@@ -49,33 +49,33 @@ jobs:
           unzip -o xray-knife.zip
           chmod +x xray-knife
 
-      - name: Health-check configs and build healthy.txt
+      - name: Health-check configs and build all.txt
         run: |
           # --prescan does a fast liveness check first so dead configs are
           # dropped quickly, before the slower full connection test runs.
           # --mdelay 250 keeps only configs with a real ping under 250ms.
           ./xray-knife http \
             -f all.txt \
-            -o healthy.txt \
+            -o all.txt \
             --prescan \
             --prescan-workers 300 \
             --mdelay 250 \
             -v || true
 
-          if [ -f healthy.txt ]; then
-            total=$(wc -l < healthy.txt)
+          if [ -f all.txt ]; then
+            total=$(wc -l < all.txt)
             echo "Healthy configs: $total"
           else
-            echo "No healthy.txt produced — creating an empty one."
-            > healthy.txt
+            echo "No all.txt produced — creating an empty one."
+            > all.txt
           fi
 
-      - name: Commit and push all.txt + healthy.txt
+      - name: Commit and push all.txt + all.txt
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add all.txt healthy.txt
+          git add all.txt all.txt
           # only commit if there are actual changes
           git diff --cached --quiet && echo "No changes — skipping commit." || \
-            git commit -m "chore: update all.txt / healthy.txt [$(date -u +'%Y-%m-%d %H:%M UTC')]"
+            git commit -m "chore: update all.txt / all.txt [$(date -u +'%Y-%m-%d %H:%M UTC')]"
           git push
