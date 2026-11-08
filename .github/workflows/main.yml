@@ -61,7 +61,7 @@ jobs:
             -o healthy.txt \
             --prescan \
             --prescan-workers 300 \
-            --mdelay 250 \
+            --mdelay 175 \
             -v || true
 
           if [ ! -f healthy.txt ]; then
