@@ -1,3 +1,5 @@
 https://raw.githubusercontent.com/iboxz/free-v2ray-collector/main/main/vless.txt
 https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/refs/heads/main/Countries/Japan.txt
-https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/refs/heads/main/Countries/United_States.txt
+https://raw.githubusercontent.com/Romaxa55/MegaV_Public/refs/heads/main/subs/all.txt
+https://raw.githubusercontent.com/roosterkid/openproxylist/refs/heads/main/V2RAY_RAW.txt
+https://raw.githubusercontent.com/ProblemTheCode/SylphNet-public/refs/heads/main/sub/sub_plain.txt
