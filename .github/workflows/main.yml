@@ -12,7 +12,7 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     permissions:
-      contents: write       # needed to push all.txt / all.txt back to the repo
+      contents: write       # needed to push all.txt back to the repo
 
     steps:
       - name: Checkout repository
@@ -49,33 +49,36 @@ jobs:
           unzip -o xray-knife.zip
           chmod +x xray-knife
 
-      - name: Health-check configs and build all.txt
+      - name: Health-check configs and overwrite all.txt with the healthy ones
         run: |
           # --prescan does a fast liveness check first so dead configs are
           # dropped quickly, before the slower full connection test runs.
           # --mdelay 250 keeps only configs with a real ping under 250ms.
+          # Output goes to a separate file first (never write -o over the
+          # same file being read with -f), then replaces all.txt.
           ./xray-knife http \
             -f all.txt \
-            -o all.txt \
+            -o healthy.txt \
             --prescan \
             --prescan-workers 300 \
             --mdelay 250 \
             -v || true
 
-          if [ -f all.txt ]; then
-            total=$(wc -l < all.txt)
-            echo "Healthy configs: $total"
-          else
-            echo "No all.txt produced — creating an empty one."
-            > all.txt
+          if [ ! -f healthy.txt ]; then
+            echo "No healthy.txt produced — creating an empty one."
+            > healthy.txt
           fi
 
-      - name: Commit and push all.txt + all.txt
+          total=$(wc -l < healthy.txt)
+          echo "Healthy configs: $total"
+          mv healthy.txt all.txt
+
+      - name: Commit and push all.txt
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add all.txt all.txt
+          git add all.txt
           # only commit if there are actual changes
           git diff --cached --quiet && echo "No changes — skipping commit." || \
-            git commit -m "chore: update all.txt / all.txt [$(date -u +'%Y-%m-%d %H:%M UTC')]"
+            git commit -m "chore: update all.txt [$(date -u +'%Y-%m-%d %H:%M UTC')]"
           git push
